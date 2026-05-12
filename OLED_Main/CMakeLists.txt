@@ -1,0 +1,3 @@
+add_executable(OLED_Controller)
+target_sources(OLED_Controller PRIVATE OLED_Controller.cpp)
+target_link_libraries(OLED_Controller OLED_Library)
