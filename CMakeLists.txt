@@ -7,6 +7,8 @@ if(HWPLIB_BUILD_EXAMPLE)
     add_subdirectory(examples)
 endif()
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 add_library(hwp SHARED
     src/hardware_protocols/i2c/i2c_ch347.cpp
 )
@@ -17,11 +19,22 @@ target_sources(hwp PUBLIC
     FILES include/hardware_protocols/i2c/i2c.hpp include/hardware_protocols/i2c/i2c_ch347.hpp
 )
 
-find_package(PkgConfig REQUIRED)
+find_path(LIBUSB_INCLUDE_DIR
+    NAMES libusb.h
+    PATH_SUFFIXES "libusb-1.0"
+)
 
-pkg_check_modules(libusb REQUIRED IMPORTED_TARGET libusb-1.0)
+find_library(LIBUSB_LIBRARY
+    NAMES usb-1.0 libusb-1.0 libusb
+)
 
-target_link_libraries(hwp PUBLIC PkgConfig::libusb)
+if(LIBUSB_INCLUDE_DIR AND LIBUSB_LIBRARY)
+    message(STATUS "Found libusb library and its headers")
+    target_include_directories(hwp PRIVATE ${LIBUSB_INCLUDE_DIR})
+    target_link_libraries(hwp PRIVATE ${LIBUSB_LIBRARY})
+else()
+    message(FATAL_ERROR "FATAL ERROR: Could not find libusb library or headers!")
+endif()
 
 include(GNUInstallDirs)
 
