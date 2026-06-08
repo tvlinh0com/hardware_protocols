@@ -5,6 +5,7 @@
             "name": "default",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_STANDARD": "20"
             }
         }
