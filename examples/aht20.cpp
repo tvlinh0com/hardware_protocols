@@ -1,7 +1,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
-#include <hardware_protocols/i2c/i2c_ch347.hpp>
+#include <hardware_protocols/i2c/i2c_ch347t.hpp>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -18,7 +18,7 @@ class AHT20 {
 
         bool Initialize() {
             if (this->i2c == nullptr) {
-                this->i2c = new tvlinh::hardware_protocols::CH347I2CController();
+                this->i2c = new tvlinh::hardware_protocols::CH347TI2CController();
 
                 if (this->i2c) {
                     if (!this->i2c->Init()) {
