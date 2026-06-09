@@ -118,12 +118,22 @@ bool tvlinh::hardware_protocols::CH347I2CController::Write(uint8_t address, std:
         return false;
     }
 
-    uint8_t ack = 0;
+    std::vector<uint8_t> ack(kMaxPacketSize);
+    result = libusb_bulk_transfer(this->device_handle_, kCh347InEp, ack.data(), ack.size(), &transferred, kCh347Timeout);
 
-    result = libusb_bulk_transfer(this->device_handle_, kCh347InEp, &ack, sizeof ack, &transferred, kCh347Timeout);
-
-    if (result < 0 || transferred != sizeof ack || ack != 1) {
+    if (result < 0) {
         return false;
+    }
+
+    if (transferred != (data.size() + 1)) {
+        return false;
+    }
+
+    // Verify ACK for each sent byte (ADDRESS + DATA)
+    for (int i = 0; i < transferred; i++) {
+        if (ack[i] != 1) {
+            return false;
+        }
     }
 
     return true;
@@ -159,12 +169,18 @@ bool tvlinh::hardware_protocols::CH347I2CController::Read(uint8_t address, std::
         return false;
     }
 
-    uint8_t ack;
+    // Resize to contain ACK status
+    data.resize(data.size() + 1);
 
-    result = libusb_bulk_transfer(this->device_handle_, kCh347InEp, &ack, sizeof ack, &transferred, kCh347Timeout);
+    result = libusb_bulk_transfer(this->device_handle_, kCh347InEp, data.data(), data.size(), &transferred, kCh347Timeout);
 
-    if (result < 0 || transferred != sizeof ack || ack != 1) {
+    if (result < 0 || transferred != data.size() || data[0] != 1) {
         return false;
+    }
+
+    // Remove ACK
+    if (!data.empty()) {
+        data.erase(data.begin());
     }
 
     return true;

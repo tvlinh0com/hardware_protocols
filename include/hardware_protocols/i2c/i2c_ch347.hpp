@@ -26,6 +26,7 @@ namespace tvlinh {
                 static constexpr int kCh347Timeout = 1000;
                 static constexpr int kCh347OutEp = 0x06;
                 static constexpr int kCh347InEp = 0x86;
+                static constexpr int kMaxPacketSize = 512;
 
                 static constexpr uint8_t kCh347CmdI2cStream = 0xAA;
                 static constexpr uint8_t kCh347CmdI2cStmStart = 0x74;
