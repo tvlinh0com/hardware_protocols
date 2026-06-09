@@ -1,18 +1,18 @@
-#include "hardware_protocols/i2c/i2c_ch347.hpp"
 #include <libusb.h>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include "hardware_protocols/i2c/i2c_ch347t.hpp"
 
-tvlinh::hardware_protocols::CH347I2CController::CH347I2CController() {
+tvlinh::hardware_protocols::CH347TI2CController::CH347TI2CController() {
     this->context_ = nullptr;
     this->device_handle_ = nullptr;
     this->is_init_done_ = false;
 }
 
-tvlinh::hardware_protocols::CH347I2CController::~CH347I2CController() {
+tvlinh::hardware_protocols::CH347TI2CController::~CH347TI2CController() {
     if (this->is_init_done_) {
-        libusb_release_interface(this->device_handle_, kCh347InterfaceNumber);
+        libusb_release_interface(this->device_handle_, kCh347tInterfaceNumber);
         this->is_init_done_ = false;
     }
 
@@ -27,14 +27,14 @@ tvlinh::hardware_protocols::CH347I2CController::~CH347I2CController() {
     }
 }
 
-bool tvlinh::hardware_protocols::CH347I2CController::Init() {
+bool tvlinh::hardware_protocols::CH347TI2CController::Init() {
     auto result = libusb_init_context(&this->context_, NULL, 0);
 
     if (result < 0) {
         return false;
     }
 
-    this->device_handle_ = libusb_open_device_with_vid_pid(this->context_, kCh347UsbVid, kCh347UsbPid);
+    this->device_handle_ = libusb_open_device_with_vid_pid(this->context_, kCh347tUsbVid, kCh347tUsbPid);
 
     if (!this->device_handle_) {
         libusb_exit(this->context_);
@@ -49,7 +49,7 @@ bool tvlinh::hardware_protocols::CH347I2CController::Init() {
         return false;
     }
 
-    result = libusb_claim_interface(this->device_handle_, kCh347InterfaceNumber);
+    result = libusb_claim_interface(this->device_handle_, kCh347tInterfaceNumber);
 
     if (result < 0) {
         libusb_close(this->device_handle_);
@@ -62,33 +62,33 @@ bool tvlinh::hardware_protocols::CH347I2CController::Init() {
     return true;
 }
 
-bool tvlinh::hardware_protocols::CH347I2CController::ConfigureClockSpeed(ClockSpeed speed) {
-    uint8_t speed_value = kCh347StmI2c20K;
+bool tvlinh::hardware_protocols::CH347TI2CController::ConfigureClockSpeed(ClockSpeed speed) {
+    uint8_t speed_value = kCh347tStmI2c20K;
 
     switch (speed) {
         case ClockSpeed::kSpeed20K:
-            speed_value = kCh347StmI2c20K;
+            speed_value = kCh347tStmI2c20K;
             break;
         case ClockSpeed::kSpeed100K:
-            speed_value = kCh347StmI2c100K;
+            speed_value = kCh347tStmI2c100K;
             break;
         case ClockSpeed::kSpeed400K:
-            speed_value = kCh347StmI2c400K;
+            speed_value = kCh347tStmI2c400K;
             break;
         case ClockSpeed::kSpeed750K:
-            speed_value = kCh347StmI2c750K;
+            speed_value = kCh347tStmI2c750K;
             break;
     };
 
     std::vector<uint8_t> packet;
 
-    packet.push_back(kCh347CmdI2cStream);
-    packet.push_back(kCh347CmdI2cStmSet | (speed_value & 0b111));
-    packet.push_back(kCh347CmdI2cStmEnd);
+    packet.push_back(kCh347tCmdI2cStream);
+    packet.push_back(kCh347tCmdI2cStmSet | (speed_value & 0b111));
+    packet.push_back(kCh347tCmdI2cStmEnd);
 
     int transferred_out = 0;
 
-    auto result = libusb_bulk_transfer(this->device_handle_, kCh347OutEp, packet.data(), packet.size(), &transferred_out, kCh347Timeout);
+    auto result = libusb_bulk_transfer(this->device_handle_, kCh347tOutEp, packet.data(), packet.size(), &transferred_out, kCh347tTimeout);
 
     if (result < 0 || transferred_out != packet.size()) {
         return false;
@@ -97,29 +97,29 @@ bool tvlinh::hardware_protocols::CH347I2CController::ConfigureClockSpeed(ClockSp
     return true;
 }
 
-bool tvlinh::hardware_protocols::CH347I2CController::Write(uint8_t address, std::vector<uint8_t>& data) {
+bool tvlinh::hardware_protocols::CH347TI2CController::Write(uint8_t address, std::vector<uint8_t>& data) {
     std::vector<uint8_t> packet;
 
-    packet.push_back(kCh347CmdI2cStream);
-    packet.push_back(kCh347CmdI2cStmStart);
-    packet.push_back(kCh347CmdI2cStmOut | (data.size() + 1));
+    packet.push_back(kCh347tCmdI2cStream);
+    packet.push_back(kCh347tCmdI2cStmStart);
+    packet.push_back(kCh347tCmdI2cStmOut | (data.size() + 1));
     packet.push_back(address << 1);
     for (auto value : data) {
         packet.push_back(value);
     }
-    packet.push_back(kCh347CmdI2cStmStop);
-    packet.push_back(kCh347CmdI2cStmEnd);
+    packet.push_back(kCh347tCmdI2cStmStop);
+    packet.push_back(kCh347tCmdI2cStmEnd);
 
     int transferred = 0;
 
-    auto result = libusb_bulk_transfer(this->device_handle_, kCh347OutEp, packet.data(), packet.size(), &transferred, kCh347Timeout);
+    auto result = libusb_bulk_transfer(this->device_handle_, kCh347tOutEp, packet.data(), packet.size(), &transferred, kCh347tTimeout);
 
     if (result < 0 || transferred != packet.size()) {
         return false;
     }
 
     std::vector<uint8_t> ack(kMaxPacketSize);
-    result = libusb_bulk_transfer(this->device_handle_, kCh347InEp, ack.data(), ack.size(), &transferred, kCh347Timeout);
+    result = libusb_bulk_transfer(this->device_handle_, kCh347tInEp, ack.data(), ack.size(), &transferred, kCh347tTimeout);
 
     if (result < 0) {
         return false;
@@ -139,31 +139,31 @@ bool tvlinh::hardware_protocols::CH347I2CController::Write(uint8_t address, std:
     return true;
 }
 
-bool tvlinh::hardware_protocols::CH347I2CController::Read(uint8_t address, std::vector<uint8_t>& data) {
+bool tvlinh::hardware_protocols::CH347TI2CController::Read(uint8_t address, std::vector<uint8_t>& data) {
     if (data.size() == 0) {
         return true;
     }
 
     std::vector<uint8_t> packet;
 
-    packet.push_back(kCh347CmdI2cStream);
-    packet.push_back(kCh347CmdI2cStmStart);
-    packet.push_back(kCh347CmdI2cStmOut | 1);
+    packet.push_back(kCh347tCmdI2cStream);
+    packet.push_back(kCh347tCmdI2cStmStart);
+    packet.push_back(kCh347tCmdI2cStmOut | 1);
     packet.push_back((address << 1) | 1);
 
     for (int i = 1; i < data.size(); i++) {
         // Read back and emit ACK
-        packet.push_back(kCh347CmdI2cStmIn | 1);
+        packet.push_back(kCh347tCmdI2cStmIn | 1);
     }
 
     // Read back and emit NACK
-    packet.push_back(kCh347CmdI2cStmIn);
-    packet.push_back(kCh347CmdI2cStmStop);
-    packet.push_back(kCh347CmdI2cStmEnd);
+    packet.push_back(kCh347tCmdI2cStmIn);
+    packet.push_back(kCh347tCmdI2cStmStop);
+    packet.push_back(kCh347tCmdI2cStmEnd);
 
     int transferred = 0;
 
-    auto result = libusb_bulk_transfer(this->device_handle_, kCh347OutEp, packet.data(), packet.size(), &transferred, kCh347Timeout);
+    auto result = libusb_bulk_transfer(this->device_handle_, kCh347tOutEp, packet.data(), packet.size(), &transferred, kCh347tTimeout);
 
     if (result < 0 || transferred != packet.size()) {
         return false;
@@ -172,7 +172,7 @@ bool tvlinh::hardware_protocols::CH347I2CController::Read(uint8_t address, std::
     // Resize to contain ACK status
     data.resize(data.size() + 1);
 
-    result = libusb_bulk_transfer(this->device_handle_, kCh347InEp, data.data(), data.size(), &transferred, kCh347Timeout);
+    result = libusb_bulk_transfer(this->device_handle_, kCh347tInEp, data.data(), data.size(), &transferred, kCh347tTimeout);
 
     if (result < 0 || transferred != data.size() || data[0] != 1) {
         return false;
