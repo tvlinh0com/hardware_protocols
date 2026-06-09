@@ -30,8 +30,8 @@ find_library(LIBUSB_LIBRARY
 
 if(LIBUSB_INCLUDE_DIR AND LIBUSB_LIBRARY)
     message(STATUS "Found libusb library and its headers")
-    target_include_directories(hwp PRIVATE ${LIBUSB_INCLUDE_DIR})
-    target_link_libraries(hwp PRIVATE ${LIBUSB_LIBRARY})
+    target_include_directories(hwp PUBLIC ${LIBUSB_INCLUDE_DIR})
+    target_link_libraries(hwp PUBLIC ${LIBUSB_LIBRARY})
 else()
     message(FATAL_ERROR "FATAL ERROR: Could not find libusb library or headers!")
 endif()
