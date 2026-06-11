@@ -1,8 +1,8 @@
 #include <libusb.h>
 #include <cstddef>
 #include <cstdint>
+#include <hardware_protocols/i2c/i2c_ch347t.hpp>
 #include <vector>
-#include "hardware_protocols/i2c/i2c_ch347t.hpp"
 
 tvlinh::hardware_protocols::CH347TI2CController::CH347TI2CController() {
     this->context_ = nullptr;
@@ -37,23 +37,18 @@ bool tvlinh::hardware_protocols::CH347TI2CController::Init() {
     this->device_handle_ = libusb_open_device_with_vid_pid(this->context_, kCh347tUsbVid, kCh347tUsbPid);
 
     if (!this->device_handle_) {
-        libusb_exit(this->context_);
         return false;
     }
 
     result = libusb_set_auto_detach_kernel_driver(this->device_handle_, 1);
 
     if (result < 0) {
-        libusb_close(this->device_handle_);
-        libusb_exit(this->context_);
         return false;
     }
 
     result = libusb_claim_interface(this->device_handle_, kCh347tInterfaceNumber);
 
     if (result < 0) {
-        libusb_close(this->device_handle_);
-        libusb_exit(this->context_);
         return false;
     }
 
