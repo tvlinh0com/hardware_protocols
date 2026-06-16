@@ -1,10 +1,14 @@
-name: OLED Driver with GitHub Actions
+name: Build Library
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  # push:
+  #   branches: [ "master" ]
+  # pull_request:
+  #   branches: [ "master" ]
+  workflow_run:
+    workflows: ["Code Formatting"]
+    types:
+      - completed
 
 env:
   BUILD_TYPE: Release

@@ -1,0 +1,16 @@
+name: Code Formatting
+
+on: [push, pull_request]
+
+jobs:
+    format-check:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Run clang-format check
+              uses: jidicula/clang-format-action@v4.18.0
+              with:
+                check-path: '.'
+                include-regex: '^.*\.(h|hpp|c|cpp)$'
