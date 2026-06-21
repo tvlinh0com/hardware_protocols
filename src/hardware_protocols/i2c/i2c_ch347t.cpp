@@ -40,6 +40,21 @@ bool tvlinh::hardware_protocols::CH347TI2CController::Init() {
         return false;
     }
 
+    result = libusb_reset_device(this->device_handle_);
+
+    if (result == LIBUSB_ERROR_NOT_FOUND) {
+        // Need to close the old device handle and reopen a new one
+        libusb_close(this->device_handle_);
+
+        this->device_handle_ = libusb_open_device_with_vid_pid(this->context_, kCh347tUsbVid, kCh347tUsbPid);
+
+        if (!this->device_handle_) {
+            return false;
+        }
+    } else if (result != 0) {
+        return false;
+    }
+
     result = libusb_set_auto_detach_kernel_driver(this->device_handle_, 1);
 
     if (result < 0) {
