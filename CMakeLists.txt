@@ -11,12 +11,14 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_library(hwp SHARED
     src/hardware_protocols/i2c/i2c_ch347t.cpp
+    src/hardware_protocols/spi/spi_ch347t.cpp
 )
 
 target_sources(hwp PUBLIC
     FILE_SET HEADERS
     BASE_DIRS include
     FILES include/hardware_protocols/i2c/i2c.hpp include/hardware_protocols/i2c/i2c_ch347t.hpp
+    include/hardware_protocols/spi/spi.hpp include/hardware_protocols/spi/spi_ch347t.hpp
 )
 
 find_path(LIBUSB_INCLUDE_DIR
