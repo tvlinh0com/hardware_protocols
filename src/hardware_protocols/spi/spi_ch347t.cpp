@@ -57,7 +57,7 @@ bool tvlinh::hardware_protocols::CH347TSPIController::UsbTransfer(std::vector<ui
 }
 
 bool tvlinh::hardware_protocols::CH347TSPIController::Init() {
-    auto result = libusb_init_context(&this->context_, NULL, 0);
+    auto result = libusb_init(&this->context_);
 
     if (result < 0) {
         return false;

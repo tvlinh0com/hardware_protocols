@@ -28,7 +28,7 @@ tvlinh::hardware_protocols::CH347TI2CController::~CH347TI2CController() {
 }
 
 bool tvlinh::hardware_protocols::CH347TI2CController::Init() {
-    auto result = libusb_init_context(&this->context_, NULL, 0);
+    auto result = libusb_init(&this->context_);
 
     if (result < 0) {
         return false;
