@@ -98,6 +98,22 @@ cmake --preset default -DHWPLIB_BUILD_EXAMPLE=ON
 cmake --build build
 ```
 
+## ▶️ Running the Examples
+
+This repository includes example binaries for **I2C** and **SPI** protocols. Built binaries are located in the `build/bin/` directory.
+
+### Example: SSD1309 OLED Driver
+
+**⚠️ Hardware Requirement**: Before running the binary, assemble your hardware connections exactly as shown in the breadboard diagram below.
+
+![CH347T_OLED_Diagram](resources/diagrams/ch347t_oled.png)
+
+Run the following command to execute the driver. Successful execution will display the text **I2C PROTOCOL!** on your OLED screen:
+
+```bash
+./build/bin/i2c_oled_ssd1309
+```
+
 ## 💡 Quick Start & Usage
 
 Below is a quick example showing how to initialize the CH347T via libusb and perform basic SPI/I2C transfers.
