@@ -1092,7 +1092,7 @@ Mcp2515::Error Mcp2515::SendMessage(const Txbn txbn, const CanFrame* frame) {
         return Error::kFailTx;
     }
 
-    const TxbnRegs* tx_buf = &txb[static_cast<uint8_t>(txbn)];
+    const TxbnRegs* txb_regs = &txb[static_cast<uint8_t>(txbn)];
     uint8_t data[13];
 
     bool ext = (frame->can_id & CAN_EFF_FLAG);
@@ -1102,10 +1102,10 @@ Mcp2515::Error Mcp2515::SendMessage(const Txbn txbn, const CanFrame* frame) {
     this->PrepareId(data, ext, id);
     data[kMcpDlc] = rtr ? (frame->can_dlc | kRtrMask) : frame->can_dlc;
     std::memcpy(&data[kMcpData], frame->data, frame->can_dlc);
-    this->SetRegisters(tx_buf->sidh, data, 5 + frame->can_dlc);
-    this->ModifyRegister(tx_buf->ctrl, static_cast<uint8_t>(TxbnCtrl::kTxreq), static_cast<uint8_t>(TxbnCtrl::kTxreq));
+    this->SetRegisters(txb_regs->sidh, data, 5 + frame->can_dlc);
+    this->ModifyRegister(txb_regs->ctrl, static_cast<uint8_t>(TxbnCtrl::kTxreq), static_cast<uint8_t>(TxbnCtrl::kTxreq));
 
-    uint8_t ctrl = this->ReadRegister(tx_buf->ctrl);
+    uint8_t ctrl = this->ReadRegister(txb_regs->ctrl);
 
     if ((ctrl & (static_cast<uint8_t>(TxbnCtrl::kAbtf) | static_cast<uint8_t>(TxbnCtrl::kMloa) | static_cast<uint8_t>(TxbnCtrl::kTxerr))) != 0) {
         return Error::kFailTx;
@@ -1122,8 +1122,8 @@ Mcp2515::Error Mcp2515::SendMessage(const CanFrame* frame) {
     Txbn tx_buffers[kNumTxBuffers] = {Txbn::kTxb0, Txbn::kTxb1, Txbn::kTxb2};
 
     for (int i = 0; i < kNumTxBuffers; i++) {
-        const TxbnRegs* tx_buf = &txb[static_cast<uint8_t>(tx_buffers[i])];
-        uint8_t ctrlval = this->ReadRegister(tx_buf->ctrl);
+        const TxbnRegs* txb_regs = &txb[static_cast<uint8_t>(tx_buffers[i])];
+        uint8_t ctrlval = this->ReadRegister(txb_regs->ctrl);
 
         if ((ctrlval & static_cast<uint8_t>(TxbnCtrl::kTxreq)) == 0) {
             return this->SendMessage(tx_buffers[i], frame);
@@ -1134,10 +1134,10 @@ Mcp2515::Error Mcp2515::SendMessage(const CanFrame* frame) {
 }
 
 Mcp2515::Error Mcp2515::ReadMessage(const Rxbn rxbn, CanFrame* frame) {
-    const RxbnRegs* rxb = &rxb[static_cast<uint8_t>(rxbn)];
+    const RxbnRegs* rxb_regs = &rxb[static_cast<uint8_t>(rxbn)];
     uint8_t tbuf_data[5];
 
-    this->ReadRegisters(rxb->sidh, tbuf_data, 5);
+    this->ReadRegisters(rxb_regs->sidh, tbuf_data, 5);
     uint32_t id = (tbuf_data[kMcpSidh] << 3) + (tbuf_data[kMcpSidl] >> 5);
 
     if ((tbuf_data[kMcpSidl] & kTxbExideMask) == kTxbExideMask) {
@@ -1153,7 +1153,7 @@ Mcp2515::Error Mcp2515::ReadMessage(const Rxbn rxbn, CanFrame* frame) {
         return Error::kFail;
     }
 
-    uint8_t ctrl = this->ReadRegister(rxb->ctrl);
+    uint8_t ctrl = this->ReadRegister(rxb_regs->ctrl);
 
     if (ctrl & kRxbnCtrlRtr) {
         id |= CAN_RTR_FLAG;
@@ -1162,8 +1162,8 @@ Mcp2515::Error Mcp2515::ReadMessage(const Rxbn rxbn, CanFrame* frame) {
     frame->can_id = id;
     frame->can_dlc = dlc;
 
-    this->ReadRegisters(rxb->data, frame->data, dlc);
-    this->ModifyRegister(Register::kCanIntf, static_cast<uint8_t>(rxb->can_intf_rxn_if), 0);
+    this->ReadRegisters(rxb_regs->data, frame->data, dlc);
+    this->ModifyRegister(Register::kCanIntf, static_cast<uint8_t>(rxb_regs->can_intf_rxn_if), 0);
 
     return Error::kOk;
 }
