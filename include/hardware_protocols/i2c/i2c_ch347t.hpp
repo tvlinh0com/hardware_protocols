@@ -12,6 +12,7 @@ namespace tvlinh {
         class CH347TI2CController : public I2CController {
             public:
                 CH347TI2CController();
+                CH347TI2CController(uint8_t bus, uint8_t dev_num);
                 ~CH347TI2CController();
 
                 bool Init();
@@ -44,6 +45,8 @@ namespace tvlinh {
                 libusb_context* context_;
                 libusb_device_handle* device_handle_;
                 bool is_init_done_;
+                uint8_t bus_, dev_num_;
+                bool is_specific_device_;
         };
     }  // namespace hardware_protocols
 }  // namespace tvlinh
