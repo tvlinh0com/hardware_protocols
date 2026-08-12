@@ -8,6 +8,13 @@ tvlinh::hardware_protocols::CH347TI2CController::CH347TI2CController() {
     this->context_ = nullptr;
     this->device_handle_ = nullptr;
     this->is_init_done_ = false;
+    this->is_specific_device_ = false;
+}
+
+tvlinh::hardware_protocols::CH347TI2CController::CH347TI2CController(uint8_t bus, uint8_t dev_num) : CH347TI2CController() {
+    this->is_specific_device_ = true;
+    this->bus_ = bus;
+    this->dev_num_ = dev_num;
 }
 
 tvlinh::hardware_protocols::CH347TI2CController::~CH347TI2CController() {
@@ -34,7 +41,32 @@ bool tvlinh::hardware_protocols::CH347TI2CController::Init() {
         return false;
     }
 
-    this->device_handle_ = libusb_open_device_with_vid_pid(this->context_, kCh347tUsbVid, kCh347tUsbPid);
+    if (this->is_specific_device_) {
+        libusb_device** devs;
+        ssize_t count = libusb_get_device_list(this->context_, &devs);
+
+        if (count < 0) {
+            return false;
+        }
+
+        for (ssize_t i = 0; i < count; i++) {
+            libusb_device_descriptor desc;
+
+            if (libusb_get_device_descriptor(devs[i], &desc) < 0)
+                continue;
+
+            if (desc.idVendor == kCh347tUsbVid && desc.idProduct == kCh347tUsbPid &&
+                libusb_get_bus_number(devs[i]) == this->bus_ && libusb_get_device_address(devs[i]) == this->dev_num_) {
+                if (libusb_open(devs[i], &this->device_handle_) == 0) {
+                    break;
+                }
+            }
+        }
+
+        libusb_free_device_list(devs, 1);
+    } else {
+        this->device_handle_ = libusb_open_device_with_vid_pid(this->context_, kCh347tUsbVid, kCh347tUsbPid);
+    }
 
     if (!this->device_handle_) {
         return false;

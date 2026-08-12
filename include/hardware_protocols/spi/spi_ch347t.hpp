@@ -10,6 +10,7 @@ namespace tvlinh {
         class CH347TSPIController : public SPIController {
             public:
                 CH347TSPIController();
+                CH347TSPIController(uint8_t bus, uint8_t dev_num);
                 virtual ~CH347TSPIController();
 
                 virtual bool Init();
@@ -96,6 +97,8 @@ namespace tvlinh {
                 bool is_init_done_;
                 CH347TSPIConfiguration ch347t_spi_configuration_;
                 uint16_t firmware_version_;
+                uint8_t bus_, dev_num_;
+                bool is_specific_device_;
         };
     }  // namespace hardware_protocols
 }  // namespace tvlinh
