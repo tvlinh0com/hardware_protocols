@@ -1322,10 +1322,10 @@ int main() {
 
     while (true) {
         if (mcp2515.ReadMessage(&can_msg) == Mcp2515::Error::kOk) {
-            std::cout << std::format("ID: {:X} | DLC: {} | DATA: ", can_msg.can_id, can_msg.can_dlc);
+            std::cout << std::format("ID: 0x{:08X} | DLC: {} | DATA: ", can_msg.can_id, can_msg.can_dlc);
 
             for (int i = 0; i < can_msg.can_dlc; ++i) {
-                std::cout << std::format("0x{:X} ", can_msg.data[i]);
+                std::cout << std::format("0x{:02X} ", can_msg.data[i]);
             }
 
             std::cout << std::endl;
